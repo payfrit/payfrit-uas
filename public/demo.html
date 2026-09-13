@@ -50,7 +50,7 @@
   <section>
     <h2>Locale formatting</h2>
     <p class="muted">Formatting is derived presentation. The canonical amount remains unchanged.</p>
-    <div class="row"><div><label for="formatAmount">Canonical amount</label><input id="formatAmount" value="1234.5" oninput="formatAmount()"></div><div><label for="locale">Locale</label><select id="locale" onchange="formatAmount()"><option>en-US</option><option>de-DE</option><option>ja-JP</option><option>ar-KW</option></select></div><div><label for="formatCurrency">Currency</label><select id="formatCurrency" onchange="formatAmount()"></select></div><button onclick="formatAmount()">Format</button></div>
+    <div class="row"><div><label for="formatAmount">Canonical amount</label><input id="formatAmount" value="1234.5" oninput="formatAmount()"></div><div><label for="locale">Locale</label><select id="locale" onchange="formatAmount()"></select></div><div><label for="formatCurrency">Currency</label><select id="formatCurrency" onchange="formatAmount()"></select></div><button onclick="formatAmount()">Format</button></div>
     <div id="formatResult" class="result">Choose a locale or currency to see the derived display update.</div>
   </section>
 
@@ -91,6 +91,20 @@
         return option;
       }));
     }
+    function populateLocaleSelect() {
+      const locales = [
+        ['en-US', 'English — United States'], ['en-GB', 'English — United Kingdom'], ['en-CA', 'English — Canada'], ['en-AU', 'English — Australia'],
+        ['fr-FR', 'French — France'], ['fr-CA', 'French — Canada'], ['de-DE', 'German — Germany'], ['es-ES', 'Spanish — Spain'], ['es-MX', 'Spanish — Mexico'],
+        ['it-IT', 'Italian — Italy'], ['pt-BR', 'Portuguese — Brazil'], ['pt-PT', 'Portuguese — Portugal'], ['nl-NL', 'Dutch — Netherlands'],
+        ['pl-PL', 'Polish — Poland'], ['cs-CZ', 'Czech — Czechia'], ['sv-SE', 'Swedish — Sweden'], ['da-DK', 'Danish — Denmark'], ['nb-NO', 'Norwegian — Norway'],
+        ['tr-TR', 'Turkish — Türkiye'], ['ru-RU', 'Russian — Russia'], ['uk-UA', 'Ukrainian — Ukraine'], ['ar-SA', 'Arabic — Saudi Arabia'], ['ar-KW', 'Arabic — Kuwait'],
+        ['he-IL', 'Hebrew — Israel'], ['hi-IN', 'Hindi — India'], ['ja-JP', 'Japanese — Japan'], ['ko-KR', 'Korean — South Korea'], ['zh-CN', 'Chinese — China'],
+        ['zh-TW', 'Chinese — Taiwan'], ['th-TH', 'Thai — Thailand'], ['id-ID', 'Indonesian — Indonesia'], ['vi-VN', 'Vietnamese — Vietnam']
+      ];
+      const select = document.querySelector('#locale');
+      select.replaceChildren(...locales.map(([code, label]) => new Option(`${code} — ${label}`, code)));
+      select.value = 'en-US';
+    }
     async function loadCurrencies() {
       const response = await fetch('/v1/currencies');
       const data = await response.json();
@@ -101,6 +115,7 @@
       populateCurrencySelect('#target', currencies, 'EUR');
       populateCurrencySelect('#formatCurrency', currencies, 'USD');
     }
+    populateLocaleSelect();
     loadCurrencies().then(formatAmount).catch(error => { document.querySelector('#currencyRows').textContent = error.message; });
   </script>
 </body>
