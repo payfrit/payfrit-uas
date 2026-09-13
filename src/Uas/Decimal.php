@@ -95,10 +95,89 @@ final class Decimal
         $out = substr($digits, 0, -$scale) . '.' . substr($digits, -$scale);
         return ($sign === '-' && !$isZero) ? '-' . $out : $out;
     }
-    private static function zero(int $scale): string { return '0.' . str_repeat('0', $scale); }
-    private static function compareIntegers(string $a, string $b): int { $a=ltrim($a,'0')?:'0'; $b=ltrim($b,'0')?:'0'; return strlen($a)<=>strlen($b) ?: strcmp($a,$b)<=>0; }
-    private static function addIntegers(string $a, string $b): string { $i=strlen($a)-1;$j=strlen($b)-1;$carry=0;$o=''; while($i>=0||$j>=0||$carry){$n=($i>=0?(int)$a[$i--]:0)+($j>=0?(int)$b[$j--]:0)+$carry;$o=($n%10).$o;$carry=intdiv($n,10);} return $o; }
-    private static function subtractIntegers(string $a, string $b): string { $i=strlen($a)-1;$j=strlen($b)-1;$borrow=0;$o=''; while($i>=0){$n=(int)$a[$i--]-$borrow-($j>=0?(int)$b[$j--]:0);if($n<0){$n+=10;$borrow=1;}else{$borrow=0;}$o=$n.$o;} return ltrim($o,'0')?:'0'; }
-    private static function multiplyIntegers(string $a, string $b): string { $r=array_fill(0,strlen($a)+strlen($b),0); for($i=strlen($a)-1;$i>=0;$i--)for($j=strlen($b)-1;$j>=0;$j--){$p=$i+$j+1;$v=(int)$a[$i]*(int)$b[$j]+$r[$p];$r[$p]=$v%10;$r[$p-1]+=(int)($v/10);} return ltrim(implode('',$r),'0')?:'0'; }
-    private static function divideIntegers(string $numerator, string $denominator): array { $q=''; $remainder='0'; foreach(str_split($numerator) as $digit){$remainder=ltrim($remainder.$digit,'0')?:'0';$n=0;while(self::compareIntegers($remainder,$denominator)>=0){$remainder=self::subtractIntegers($remainder,$denominator);$n++;} $q.=(string)$n;} return [ltrim($q,'0')?:'0',$remainder]; }
+    private static function zero(int $scale): string
+    {
+        return '0.' . str_repeat('0', $scale);
+    }
+
+    private static function compareIntegers(string $a, string $b): int
+    {
+        $a = ltrim($a, '0') ?: '0';
+        $b = ltrim($b, '0') ?: '0';
+
+        return strlen($a) <=> strlen($b) ?: strcmp($a, $b) <=> 0;
+    }
+
+    private static function addIntegers(string $a, string $b): string
+    {
+        $i = strlen($a) - 1;
+        $j = strlen($b) - 1;
+        $carry = 0;
+        $output = '';
+
+        while ($i >= 0 || $j >= 0 || $carry) {
+            $digit = ($i >= 0 ? (int) $a[$i--] : 0)
+                + ($j >= 0 ? (int) $b[$j--] : 0)
+                + $carry;
+            $output = ($digit % 10) . $output;
+            $carry = intdiv($digit, 10);
+        }
+
+        return $output;
+    }
+
+    private static function subtractIntegers(string $a, string $b): string
+    {
+        $i = strlen($a) - 1;
+        $j = strlen($b) - 1;
+        $borrow = 0;
+        $output = '';
+
+        while ($i >= 0) {
+            $digit = (int) $a[$i--] - $borrow - ($j >= 0 ? (int) $b[$j--] : 0);
+            if ($digit < 0) {
+                $digit += 10;
+                $borrow = 1;
+            } else {
+                $borrow = 0;
+            }
+            $output = $digit . $output;
+        }
+
+        return ltrim($output, '0') ?: '0';
+    }
+
+    private static function multiplyIntegers(string $a, string $b): string
+    {
+        $result = array_fill(0, strlen($a) + strlen($b), 0);
+
+        for ($i = strlen($a) - 1; $i >= 0; $i--) {
+            for ($j = strlen($b) - 1; $j >= 0; $j--) {
+                $position = $i + $j + 1;
+                $value = (int) $a[$i] * (int) $b[$j] + $result[$position];
+                $result[$position] = $value % 10;
+                $result[$position - 1] += intdiv($value, 10);
+            }
+        }
+
+        return ltrim(implode('', $result), '0') ?: '0';
+    }
+
+    private static function divideIntegers(string $numerator, string $denominator): array
+    {
+        $quotient = '';
+        $remainder = '0';
+
+        foreach (str_split($numerator) as $digit) {
+            $remainder = ltrim($remainder . $digit, '0') ?: '0';
+            $quotientDigit = 0;
+            while (self::compareIntegers($remainder, $denominator) >= 0) {
+                $remainder = self::subtractIntegers($remainder, $denominator);
+                $quotientDigit++;
+            }
+            $quotient .= (string) $quotientDigit;
+        }
+
+        return [ltrim($quotient, '0') ?: '0', $remainder];
+    }
 }
