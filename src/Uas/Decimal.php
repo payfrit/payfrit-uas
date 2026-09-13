@@ -9,7 +9,7 @@ final class Decimal
 {
     public const SCALE = 8;
 
-    public static function normalize(string $value, int $scale = self::SCALE): string
+    public static function normalize(string $value): string
     {
         $value = trim($value);
         if (!preg_match('/^([+-]?)(?:(\d+)(?:\.(\d+))?|\.(\d+))$/', $value, $m)) {
@@ -17,87 +17,127 @@ final class Decimal
         }
         $integerPart = $m[2] ?? '';
         $fraction = ($m[3] ?? '') !== '' ? $m[3] : ($m[4] ?? '');
-        if (strlen($fraction) > $scale) {
-            throw new InvalidArgumentException("amount supports at most {$scale} fractional places");
+        if (strlen($fraction) > self::SCALE) {
+            throw new InvalidArgumentException('amount supports at most 8 fractional places');
         }
         $integer = ltrim($integerPart, '0') ?: '0';
         if (strlen($integer) > 20) {
             throw new InvalidArgumentException('amount exceeds DECIMAL(28,8) magnitude');
         }
-        $fraction = str_pad($fraction, $scale, '0');
+        $fraction = str_pad($fraction, self::SCALE, '0');
         $negative = $m[1] === '-' && ($integer !== '0' || trim($fraction, '0') !== '');
         return ($negative ? '-' : '') . $integer . '.' . $fraction;
     }
 
-    public static function add(string $left, string $right, int $scale = self::SCALE): string
+    public static function add(string $left, string $right): string
     {
-        [$a, $b] = self::align($left, $right, $scale);
-        if ($a[0] === $b[0]) return self::fromInteger(self::addIntegers(substr($a, 1), substr($b, 1)), $a[0] === '-' ? '-' : '', $scale);
-        $cmp = self::compareIntegers(substr($a, 1), substr($b, 1));
-        if ($cmp === 0) return self::zero($scale);
-        if ($cmp > 0) return self::fromInteger(self::subtractIntegers(substr($a, 1), substr($b, 1)), $a[0] === '-' ? '-' : '', $scale);
-        return self::fromInteger(self::subtractIntegers(substr($b, 1), substr($a, 1)), $b[0] === '-' ? '-' : '', $scale);
+        [$a, $b] = self::align($left, $right);
+        if ($a[0] === $b[0]) {
+            return self::fromInteger(
+                self::addIntegers(substr($a, 1), substr($b, 1)),
+                $a[0] === '-' ? '-' : ''
+            );
+        }
+
+        $comparison = self::compareIntegers(substr($a, 1), substr($b, 1));
+        if ($comparison === 0) {
+            return self::zero();
+        }
+        if ($comparison > 0) {
+            return self::fromInteger(
+                self::subtractIntegers(substr($a, 1), substr($b, 1)),
+                $a[0] === '-' ? '-' : ''
+            );
+        }
+
+        return self::fromInteger(
+            self::subtractIntegers(substr($b, 1), substr($a, 1)),
+            $b[0] === '-' ? '-' : ''
+        );
     }
 
-    public static function subtract(string $left, string $right, int $scale = self::SCALE): string
+    public static function subtract(string $left, string $right): string
     {
-        $right = self::normalize($right, $scale);
-        return self::add($left, ($right[0] === '-' ? '' : '-') . ltrim($right, '+-'), $scale);
+        $right = self::normalize($right);
+        $inverse = ($right[0] === '-' ? '' : '-') . ltrim($right, '+-');
+
+        return self::add($left, $inverse);
     }
 
-    public static function multiply(string $left, string $right, int $scale = self::SCALE): string
+    public static function multiply(string $left, string $right): string
     {
-        $a = self::normalize($left, $scale);
-        $b = self::normalize($right, $scale);
+        $a = self::normalize($left);
+        $b = self::normalize($right);
         $negative = (($a[0] === '-') xor ($b[0] === '-'));
         $product = self::multiplyIntegers(str_replace(['-', '.'], '', $a), str_replace(['-', '.'], '', $b));
-        [$product, $remainder] = self::divideIntegers($product, '1' . str_repeat('0', $scale));
-        if (self::compareIntegers(self::multiplyIntegers($remainder, '2'), '1' . str_repeat('0', $scale)) >= 0) {
+        $scaleFactor = '1' . str_repeat('0', self::SCALE);
+        [$product, $remainder] = self::divideIntegers($product, $scaleFactor);
+        if (self::compareIntegers(self::multiplyIntegers($remainder, '2'), $scaleFactor) >= 0) {
             $product = self::addIntegers($product, '1');
         }
-        return self::fromInteger($product, $negative ? '-' : '', $scale);
+
+        return self::fromInteger($product, $negative ? '-' : '');
     }
 
-    public static function divide(string $left, string $right, int $scale = self::SCALE): string
+    public static function divide(string $left, string $right): string
     {
-        $a = self::normalize($left, $scale); $b = self::normalize($right, $scale);
+        $a = self::normalize($left);
+        $b = self::normalize($right);
         $bDigits = str_replace(['-', '.'], '', $b);
-        if (trim($bDigits, '0') === '') throw new InvalidArgumentException('division by zero');
+        if (trim($bDigits, '0') === '') {
+            throw new InvalidArgumentException('division by zero');
+        }
+
         $negative = (($a[0] === '-') xor ($b[0] === '-'));
-        [$quotient, $remainder] = self::divideIntegers(str_replace(['-', '.'], '', $a) . str_repeat('0', $scale), $bDigits);
+        $numerator = str_replace(['-', '.'], '', $a) . str_repeat('0', self::SCALE);
+        [$quotient, $remainder] = self::divideIntegers($numerator, $bDigits);
         if (self::compareIntegers(self::multiplyIntegers($remainder, '2'), $bDigits) >= 0) {
             $quotient = self::addIntegers($quotient, '1');
         }
-        return self::fromInteger($quotient, $negative ? '-' : '', $scale);
+
+        return self::fromInteger($quotient, $negative ? '-' : '');
     }
 
-    public static function compare(string $left, string $right, int $scale = self::SCALE): int
+    public static function compare(string $left, string $right): int
     {
-        [$a, $b] = self::align($left, $right, $scale);
-        if ($a[0] !== $b[0]) return $a[0] === '-' ? -1 : 1;
-        $cmp = self::compareIntegers(substr($a, 1), substr($b, 1));
-        return $a[0] === '-' ? -$cmp : $cmp;
+        [$a, $b] = self::align($left, $right);
+        if ($a[0] !== $b[0]) {
+            return $a[0] === '-' ? -1 : 1;
+        }
+
+        $comparison = self::compareIntegers(substr($a, 1), substr($b, 1));
+
+        return $a[0] === '-' ? -$comparison : $comparison;
     }
 
-    private static function align(string $left, string $right, int $scale): array
+    private static function align(string $left, string $right): array
     {
-        $a = self::normalize($left, $scale); $b = self::normalize($right, $scale);
+        $a = self::normalize($left);
+        $b = self::normalize($right);
         $aSign = str_starts_with($a, '-') ? '-' : '+';
         $bSign = str_starts_with($b, '-') ? '-' : '+';
+
         return [$aSign . str_replace(['-', '.'], '', $a), $bSign . str_replace(['-', '.'], '', $b)];
     }
-    private static function fromInteger(string $digits, string $sign, int $scale): string
+
+    private static function fromInteger(string $digits, string $sign): string
     {
-        $digits = ltrim($digits, '0') ?: '0'; $isZero = $digits === '0';
-        $integerDigits = max(1, strlen($digits) - $scale);
-        if ($integerDigits > 20) throw new InvalidArgumentException('amount exceeds DECIMAL(28,8) magnitude');
-        $digits = str_pad($digits, $scale + 1, '0', STR_PAD_LEFT);
-        $out = substr($digits, 0, -$scale) . '.' . substr($digits, -$scale);
-        return ($sign === '-' && !$isZero) ? '-' . $out : $out;
+        $digits = ltrim($digits, '0') ?: '0';
+        $isZero = $digits === '0';
+        $integerDigits = max(1, strlen($digits) - self::SCALE);
+        if ($integerDigits > 20) {
+            throw new InvalidArgumentException('amount exceeds DECIMAL(28,8) magnitude');
+        }
+
+        $digits = str_pad($digits, self::SCALE + 1, '0', STR_PAD_LEFT);
+        $amount = substr($digits, 0, -self::SCALE) . '.' . substr($digits, -self::SCALE);
+
+        return ($sign === '-' && !$isZero) ? '-' . $amount : $amount;
     }
-    private static function zero(int $scale): string
+
+    private static function zero(): string
     {
-        return '0.' . str_repeat('0', $scale);
+        return '0.' . str_repeat('0', self::SCALE);
     }
 
     private static function compareIntegers(string $a, string $b): int

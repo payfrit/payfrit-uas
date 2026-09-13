@@ -33,8 +33,8 @@ The machine-readable schema is available at
 - Negative zero is normalized to `0.00000000`.
 - Exponential notation, `NaN`, infinity, grouping separators, currency symbols,
   whitespace inside the value, and excess precision are rejected.
-- The maximum representable magnitude is bounded by the selected storage
-  implementation's `DECIMAL(28,8)` contract.
+- The integer part contains at most 20 digits, as required by the
+  `DECIMAL(28,8)` contract.
 
 ## Currency context
 
@@ -43,7 +43,7 @@ resource must supply context when currency has meaning:
 
 ```json
 {
-  "amount": "12.34000000",
+  "price": { "amount": "12.34000000" },
   "currencyContext": "USD"
 }
 ```
@@ -76,18 +76,21 @@ largest-remainder rule.
 Formatting is derived from `UniversalAmount` and context. Formatted strings are
 never valid arithmetic inputs.
 
-Conversion requires all of the following:
+Canonical UAS conversion requires all of the following:
 
 - source amount;
 - source currency/context;
 - target currency/context;
-- dated exchange rate;
-- rounding mode; and
-- target currency precision or provider minor-unit rules.
+- positive, dated exchange rate; and
+- RFC 3339 rate timestamp.
+
+Reducing the eight-place result to a target currency or provider boundary also
+requires an explicit rounding mode and the applicable minor-unit rules.
 
 The canonical UAS amount is not changed by a display-currency preference. A
-conversion record must preserve the rate, timestamp, rounding policy, and
-resulting boundary amount so it can be reproduced.
+conversion record must preserve the rate, timestamp, and canonical result. If
+boundary rounding is applied, it must also preserve the rounding policy and
+resulting boundary amount so the operation can be reproduced.
 
 ## Compatibility guidance
 

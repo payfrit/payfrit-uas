@@ -48,6 +48,9 @@ The specification defines the canonical eight-place decimal string, validation
 rules, arithmetic semantics, currency context, conversion boundaries, and
 compatibility guidance.
 
+The HTTP contract is documented in
+[`docs/uas-api-0.0.2.md`](docs/uas-api-0.0.2.md).
+
 ## Example
 
 ```sh
@@ -64,13 +67,13 @@ Response:
 
 ## Release scope
 
-This first release provides canonical amount normalization, exact addition,
+This alpha release provides canonical amount normalization, exact addition,
 subtraction, multiplication, division, currency metadata, and rate-explicit
 conversion. It does not yet include persistence, authentication, live
 exchange-rate synchronization, or server-side localized formatting.
 
 Exact decimal arithmetic is a core UAS guarantee because consumers must be able
 to calculate totals, nested modifier prices, fees, balances, payouts, and
-allocations without binary floating-point errors. The arithmetic endpoint is
-public in 0.0.2 as a simple demonstration and conformance surface; arithmetic
+allocations without binary floating-point errors. The arithmetic endpoints are
+public in 0.0.2 as simple demonstration and conformance surfaces; arithmetic
 may become an internal library operation in a future narrower API contract.

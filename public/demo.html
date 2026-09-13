@@ -28,44 +28,112 @@
 
   <section>
     <h2>Canonical digits</h2>
-    <div class="row"><div><label for="normalize">Amount</label><input id="normalize" value="12.34"></div><button onclick="normalizeAmount()">Normalize</button></div>
-    <div id="normalizeResult" class="result">Canonical values are decimal strings with eight fractional places.</div>
+    <div class="row">
+      <div><label for="normalize">Amount</label><input id="normalize" value="12.34"></div>
+      <button onclick="normalizeAmount()">Normalize</button>
+    </div>
+    <div id="normalizeResult" class="result" aria-live="polite">Canonical values are decimal strings with eight fractional places.</div>
   </section>
 
   <section>
     <h2>Exact arithmetic</h2>
     <p class="muted">Exact arithmetic is a core UAS guarantee for totals, nested modifiers, fees, balances, payouts, and allocations. This endpoint is included as a demonstration and conformance check.</p>
-    <div class="row"><div><label for="left">First amount</label><input id="left" value="12.34000000"></div><div><label for="right">Second amount</label><input id="right" value="0.00500000"></div><button onclick="calculate('add')">Add</button><button onclick="calculate('subtract')">Subtract</button><button onclick="calculate('multiply')">Multiply</button><button onclick="calculate('divide')">Divide</button></div>
-    <div id="addResult" class="result"></div>
+    <div class="row">
+      <div><label for="left">First amount</label><input id="left" value="12.34000000"></div>
+      <div><label for="right">Second amount</label><input id="right" value="0.00500000"></div>
+      <button onclick="calculate('add')">Add</button>
+      <button onclick="calculate('subtract')">Subtract</button>
+      <button onclick="calculate('multiply')">Multiply</button>
+      <button onclick="calculate('divide')">Divide</button>
+    </div>
+    <div id="arithmeticResult" class="result" aria-live="polite"></div>
   </section>
 
   <section>
     <h2>Explicit conversion</h2>
-    <div class="conversion-row two"><div><label for="convertAmount">Amount</label><input id="convertAmount" value="12.34"></div><div><label for="rate">Rate</label><input id="rate" value="0.92"></div></div>
-    <div class="conversion-row two"><div><label for="source">From</label><select id="source"></select></div><div><label for="target">To</label><select id="target"></select></div></div>
-    <div class="conversion-row three"><div><label for="convertOutput">Formatted result</label><input id="convertOutput" value="—" readonly></div><div><label for="convertCanonical">Canonical result</label><input id="convertCanonical" value="—" readonly></div><button onclick="convertAmount()">Convert</button></div>
-    <div id="convertResult" class="result">Rates are supplied explicitly in 0.0.2; the API does not claim they are live.</div>
+    <div class="conversion-row two">
+      <div><label for="convertAmount">Amount</label><input id="convertAmount" value="12.34"></div>
+      <div><label for="rate">Rate</label><input id="rate" value="0.92"></div>
+    </div>
+    <div class="conversion-row two">
+      <div><label for="source">From</label><select id="source"></select></div>
+      <div><label for="target">To</label><select id="target"></select></div>
+    </div>
+    <div class="conversion-row three">
+      <div><label for="convertOutput">Formatted result</label><input id="convertOutput" value="—" readonly></div>
+      <div><label for="convertCanonical">Canonical result</label><input id="convertCanonical" value="—" readonly></div>
+      <button onclick="convertAmount()">Convert</button>
+    </div>
+    <div id="convertResult" class="result" aria-live="polite">Rates are supplied explicitly in 0.0.2; the API does not claim they are live.</div>
   </section>
 
   <section>
     <h2>Locale formatting</h2>
     <p class="muted">Formatting is derived presentation. The canonical amount remains unchanged.</p>
-    <div class="row"><div><label for="formatAmount">Canonical amount</label><input id="formatAmount" value="1234.5" oninput="formatAmount()"></div><div><label for="locale">Locale</label><select id="locale" onchange="formatAmount()"></select></div><div><label for="formatCurrency">Currency</label><select id="formatCurrency" onchange="formatAmount()"></select></div><button onclick="formatAmount()">Format</button></div>
-    <div id="formatResult" class="result">Choose a locale or currency to see the derived display update.</div>
+    <div class="row">
+      <div><label for="formatAmount">Canonical amount</label><input id="formatAmount" value="1234.5" oninput="formatAmount()"></div>
+      <div>
+        <label for="locale">Locale (BCP 47)</label>
+        <input id="locale" value="en-US" list="localeSuggestions" oninput="formatAmount()">
+        <datalist id="localeSuggestions">
+          <option value="en-US"><option value="en-GB"><option value="fr-FR">
+          <option value="de-DE"><option value="es-MX"><option value="ar-KW">
+          <option value="hi-IN"><option value="ja-JP"><option value="zh-CN">
+        </datalist>
+      </div>
+      <div><label for="formatCurrency">Currency</label><select id="formatCurrency" onchange="formatAmount()"></select></div>
+      <button onclick="formatAmount()">Format</button>
+    </div>
+    <div id="formatResult" class="result" aria-live="polite">Choose a locale or currency to see the derived display update.</div>
   </section>
 
-  <section><h2>Supported currencies</h2><table><thead><tr><th>Code</th><th>Name</th><th>Decimal places</th><th>Cash rounding</th></tr></thead><tbody id="currencyRows"></tbody></table></section>
+  <section>
+    <h2>Supported currencies</h2>
+    <table>
+      <thead><tr><th>Code</th><th>Name</th><th>Decimal places</th><th>Cash rounding</th></tr></thead>
+      <tbody id="currencyRows"></tbody>
+    </table>
+  </section>
 
   <script>
-    async function api(path, body) { const r = await fetch(path, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) }); return r.json(); }
-    async function normalizeAmount() { document.querySelector('#normalizeResult').textContent = JSON.stringify(await api('/v1/amounts/normalize', {amount: document.querySelector('#normalize').value}), null, 2); }
-    async function calculate(operation) { document.querySelector('#addResult').textContent = JSON.stringify(await api('/v1/amounts/' + operation, {amounts: [document.querySelector('#left').value, document.querySelector('#right').value]}), null, 2); }
+    async function api(path, body) {
+      const response = await fetch(path, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body)
+      });
+      return response.json();
+    }
+
+    async function normalizeAmount() {
+      const result = await api('/v1/amounts/normalize', {amount: document.querySelector('#normalize').value});
+      document.querySelector('#normalizeResult').textContent = JSON.stringify(result, null, 2);
+    }
+
+    async function calculate(operation) {
+      const amounts = [document.querySelector('#left').value, document.querySelector('#right').value];
+      const result = await api('/v1/amounts/' + operation, {amounts});
+      document.querySelector('#arithmeticResult').textContent = JSON.stringify(result, null, 2);
+    }
     async function convertAmount() {
       const sourceCurrency = document.querySelector('#source').value;
       const targetCurrency = document.querySelector('#target').value;
-      const result = await api('/v1/conversions', {amount: document.querySelector('#convertAmount').value, rate: document.querySelector('#rate').value, sourceCurrency, targetCurrency, rateTimestamp: new Date().toISOString()});
+      const result = await api('/v1/conversions', {
+        amount: document.querySelector('#convertAmount').value,
+        rate: document.querySelector('#rate').value,
+        sourceCurrency,
+        targetCurrency,
+        rateTimestamp: new Date().toISOString()
+      });
       if (result.ok) {
-        result.data.display = {currencyCode: targetCurrency, locale: 'en-US', formatted: new Intl.NumberFormat('en-US', {style:'currency', currency: targetCurrency}).format(Number(result.data.amount))};
+        result.data.display = {
+          currencyCode: targetCurrency,
+          locale: 'en-US',
+          formatted: new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: targetCurrency
+          }).format(result.data.amount)
+        };
         document.querySelector('#convertOutput').value = result.data.display.formatted;
         document.querySelector('#convertCanonical').value = result.data.amount;
       } else {
@@ -77,11 +145,25 @@
     async function formatAmount() {
       const rawAmount = document.querySelector('#formatAmount').value;
       const normalized = await api('/v1/amounts/normalize', {amount: rawAmount});
-      if (!normalized.ok) { document.querySelector('#formatResult').textContent = JSON.stringify(normalized, null, 2); return; }
+      if (!normalized.ok) {
+        document.querySelector('#formatResult').textContent = JSON.stringify(normalized, null, 2);
+        return;
+      }
       const locale = document.querySelector('#locale').value;
       const currency = document.querySelector('#formatCurrency').value;
-      const formatted = new Intl.NumberFormat(locale, {style:'currency', currency}).format(Number(normalized.data.amount));
-      document.querySelector('#formatResult').textContent = JSON.stringify({amount: normalized.data.amount, display: {currencyCode: currency, locale, formatted}}, null, 2);
+      try {
+        const formatted = new Intl.NumberFormat(locale, {style: 'currency', currency}).format(normalized.data.amount);
+        document.querySelector('#formatResult').textContent = JSON.stringify({
+          amount: normalized.data.amount,
+          display: {currencyCode: currency, locale, formatted}
+        }, null, 2);
+      } catch (error) {
+        document.querySelector('#formatResult').textContent = JSON.stringify({
+          ok: false,
+          error: 'invalid_locale',
+          message: error.message
+        }, null, 2);
+      }
     }
     function populateCurrencySelect(id, currencies, selected) {
       const select = document.querySelector(id);
@@ -91,32 +173,32 @@
         return option;
       }));
     }
-    function populateLocaleSelect() {
-      const locales = [
-        ['en-US', 'English — United States'], ['en-GB', 'English — United Kingdom'], ['en-CA', 'English — Canada'], ['en-AU', 'English — Australia'],
-        ['fr-FR', 'French — France'], ['fr-CA', 'French — Canada'], ['de-DE', 'German — Germany'], ['es-ES', 'Spanish — Spain'], ['es-MX', 'Spanish — Mexico'],
-        ['it-IT', 'Italian — Italy'], ['pt-BR', 'Portuguese — Brazil'], ['pt-PT', 'Portuguese — Portugal'], ['nl-NL', 'Dutch — Netherlands'],
-        ['pl-PL', 'Polish — Poland'], ['cs-CZ', 'Czech — Czechia'], ['sv-SE', 'Swedish — Sweden'], ['da-DK', 'Danish — Denmark'], ['nb-NO', 'Norwegian — Norway'],
-        ['tr-TR', 'Turkish — Türkiye'], ['ru-RU', 'Russian — Russia'], ['uk-UA', 'Ukrainian — Ukraine'], ['ar-SA', 'Arabic — Saudi Arabia'], ['ar-KW', 'Arabic — Kuwait'],
-        ['he-IL', 'Hebrew — Israel'], ['hi-IN', 'Hindi — India'], ['ja-JP', 'Japanese — Japan'], ['ko-KR', 'Korean — South Korea'], ['zh-CN', 'Chinese — China'],
-        ['zh-TW', 'Chinese — Taiwan'], ['th-TH', 'Thai — Thailand'], ['id-ID', 'Indonesian — Indonesia'], ['vi-VN', 'Vietnamese — Vietnam']
-      ];
-      const select = document.querySelector('#locale');
-      select.replaceChildren(...locales.map(([code, label]) => new Option(`${code} — ${label}`, code)));
-      select.value = 'en-US';
+
+    function currencyRow(currency) {
+      const row = document.createElement('tr');
+      for (const value of [currency.code, currency.name, currency.decimalPlaces, currency.cashRounding]) {
+        const cell = document.createElement('td');
+        cell.textContent = value;
+        row.append(cell);
+      }
+      return row;
     }
+
     async function loadCurrencies() {
       const response = await fetch('/v1/currencies');
       const data = await response.json();
-      if (!response.ok || !Array.isArray(data.currencies)) throw new Error('Could not load currency metadata');
+      if (!response.ok || !Array.isArray(data.currencies)) {
+        throw new Error('Could not load currency metadata');
+      }
       const currencies = data.currencies;
-      document.querySelector('#currencyRows').innerHTML = currencies.map(c => `<tr><td>${c.code}</td><td>${c.name}</td><td>${c.decimalPlaces}</td><td>${c.cashRounding}</td></tr>`).join('');
+      document.querySelector('#currencyRows').replaceChildren(...currencies.map(currencyRow));
       populateCurrencySelect('#source', currencies, 'USD');
       populateCurrencySelect('#target', currencies, 'EUR');
       populateCurrencySelect('#formatCurrency', currencies, 'USD');
     }
-    populateLocaleSelect();
-    loadCurrencies().then(formatAmount).catch(error => { document.querySelector('#currencyRows').textContent = error.message; });
+    loadCurrencies()
+      .then(formatAmount)
+      .catch(error => { document.querySelector('#currencyRows').textContent = error.message; });
   </script>
 </body>
 </html>

@@ -1,9 +1,8 @@
 {
   "name": "payfrit/universal-amount-standard-api",
   "description": "Standalone API and reference implementation for exact, currency-neutral amounts.",
-  "type": "project",
+  "type": "library",
   "license": "MIT",
-  "version": "0.0.2",
   "require": {
     "php": ">=8.1"
   },

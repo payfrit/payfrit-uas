@@ -9,15 +9,17 @@
 - Added an interactive browser demo covering normalization, arithmetic,
   conversion, formatting, and currency metadata.
 - Made demo currency selectors load the published catalog dynamically and
-  expanded locale formatting examples with readable labels.
+  allowed any browser-supported BCP 47 locale in the formatting demo.
 - Expanded the curated currency catalog with global currencies and zero-, two-,
   and three-decimal examples.
 - Enforced `DECIMAL(28,8)` magnitude limits and half-up multiplication
   rounding.
 - Added validation for division by zero, supported currency codes, positive
-  conversion rates, and rate timestamps.
+  conversion rates, RFC 3339 rate timestamps, and JSON string amount inputs.
 - Normalized arithmetic negative zero and rejected extra operands for binary
   arithmetic operations.
+- Corrected curated currency precision and cash-rounding metadata against
+  Unicode CLDR.
 - Fixed static demo asset serving with the documented PHP server command.
 - This remains an alpha developer release without persistence, authentication,
   live rate synchronization, or hosted uptime.
