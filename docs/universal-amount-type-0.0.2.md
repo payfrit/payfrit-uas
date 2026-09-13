@@ -20,7 +20,7 @@ The wire representation is always a JSON string:
 ```
 
 The machine-readable schema is available at
-`uas-api/schema/universal-amount.schema.json`.
+`schema/universal-amount.schema.json`.
 
 ## Invariants
 
@@ -63,8 +63,9 @@ values. Implementations must use decimal-safe arithmetic and must not convert
 through binary floating point.
 
 Multiplication by a rate or quantity produces a value normalized to eight
-places. Rounding is not implicit in the type; the caller must name the boundary
-rounding policy when reducing precision.
+places. The 0.0.2 reference implementation uses half-up rounding when the
+product exceeds eight fractional places; consumers requiring another policy
+must apply it at their own named precision boundary.
 
 Allocation must be deterministic and all allocated values must sum exactly to
 the original amount. The API's later allocation contract will use a documented

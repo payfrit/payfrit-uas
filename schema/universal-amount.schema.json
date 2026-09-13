@@ -9,7 +9,7 @@
   "properties": {
     "amount": {
       "type": "string",
-      "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{8}$",
+      "pattern": "^-?(0|[1-9][0-9]{0,19})\\.[0-9]{8}$",
       "description": "Signed fixed-point decimal normalized to eight fractional places."
     }
   }

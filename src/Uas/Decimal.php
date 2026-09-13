@@ -88,9 +88,12 @@ final class Decimal
     }
     private static function fromInteger(string $digits, string $sign, int $scale): string
     {
-        $digits = ltrim($digits, '0') ?: '0'; $digits = str_pad($digits, $scale + 1, '0', STR_PAD_LEFT);
+        $digits = ltrim($digits, '0') ?: '0'; $isZero = $digits === '0';
+        $integerDigits = max(1, strlen($digits) - $scale);
+        if ($integerDigits > 20) throw new InvalidArgumentException('amount exceeds DECIMAL(28,8) magnitude');
+        $digits = str_pad($digits, $scale + 1, '0', STR_PAD_LEFT);
         $out = substr($digits, 0, -$scale) . '.' . substr($digits, -$scale);
-        return ($sign === '-' && $digits !== '0') ? '-' . $out : $out;
+        return ($sign === '-' && !$isZero) ? '-' . $out : $out;
     }
     private static function zero(int $scale): string { return '0.' . str_repeat('0', $scale); }
     private static function compareIntegers(string $a, string $b): int { $a=ltrim($a,'0')?:'0'; $b=ltrim($b,'0')?:'0'; return strlen($a)<=>strlen($b) ?: strcmp($a,$b)<=>0; }

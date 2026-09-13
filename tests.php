@@ -1,7 +1,9 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/src/Uas/Decimal.php';
+require_once __DIR__ . '/src/Uas/Api.php';
 use Uas\Decimal;
+use Uas\Api;
 $tests=[
     [Decimal::normalize('12.34'),'12.34000000'],
     [Decimal::add('12.34000000','0.00500000'),'12.34500000'],
@@ -11,8 +13,15 @@ $tests=[
     [Decimal::divide('-10.00000000','4.00000000'),'-2.50000000'],
     [Decimal::multiply('0.00000001','0.5'),'0.00000001'],
     [Decimal::multiply('.1','.2'),'0.02000000'],
+    [Decimal::multiply('-.1','0'),'0.00000000'],
+    [Decimal::subtract('0','0.00000001'),'-0.00000001'],
 ];
-foreach($tests as [$actual,$expected]) if($actual!==$expected) throw new RuntimeException("Expected $expected, got $actual");
+foreach($tests as [$actual,$expected]) {
+    if($actual!==$expected) throw new RuntimeException("Expected $expected, got $actual");
+}
 try { Decimal::normalize('123456789012345678901.00'); throw new RuntimeException('Magnitude limit was not enforced'); } catch (InvalidArgumentException) {}
+try { Decimal::add('99999999999999999999.99999999', '0.00000001'); throw new RuntimeException('Arithmetic overflow was not rejected'); } catch (InvalidArgumentException) {}
 try { Decimal::divide('1','0'); throw new RuntimeException('Division by zero was not rejected'); } catch (InvalidArgumentException) {}
+try { Api::arithmetic(['amounts'=>['1','2','3']], 'multiply'); throw new RuntimeException('Extra arithmetic operands were not rejected'); } catch (InvalidArgumentException) {}
+if (count(Api::currencies()) !== 31) throw new RuntimeException('Currency catalog count changed unexpectedly');
 echo count($tests)." UAS tests passed\n";

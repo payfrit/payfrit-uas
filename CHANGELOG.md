@@ -8,12 +8,16 @@
   type documentation.
 - Added an interactive browser demo covering normalization, arithmetic,
   conversion, formatting, and currency metadata.
+- Made demo currency selectors load the published catalog dynamically and
+  expanded locale formatting examples with readable labels.
 - Expanded the curated currency catalog with global currencies and zero-, two-,
   and three-decimal examples.
 - Enforced `DECIMAL(28,8)` magnitude limits and half-up multiplication
   rounding.
 - Added validation for division by zero, supported currency codes, positive
   conversion rates, and rate timestamps.
+- Normalized arithmetic negative zero and rejected extra operands for binary
+  arithmetic operations.
 - Fixed static demo asset serving with the documented PHP server command.
 - This remains an alpha developer release without persistence, authentication,
   live rate synchronization, or hosted uptime.

@@ -47,6 +47,7 @@ final class Api
     {
         $values = $body['amounts'] ?? [];
         if (!is_array($values) || count($values) < ($operation === 'add' ? 1 : 2)) throw new \InvalidArgumentException('amounts must contain enough values for the operation');
+        if ($operation !== 'add' && count($values) !== 2) throw new \InvalidArgumentException($operation . ' accepts exactly two amounts');
         $left = (string)$values[0]; $right = (string)($values[1] ?? '0');
         $total = match ($operation) {
             'add' => array_reduce($values, static fn(string $carry, mixed $value): string => Decimal::add($carry, (string)$value), '0'),

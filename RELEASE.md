@@ -33,6 +33,8 @@ Universal Amount Standard API `0.0.2` is a packaging and correctness release.
   formatting, and currency metadata.
 - Expanded curated currency catalog with global two-decimal currencies plus
   zero- and three-decimal examples.
+- Demo selectors load the published currency catalog dynamically and include a
+  broad set of labeled regional locales.
 
 ### Corrected
 
@@ -42,6 +44,8 @@ Universal Amount Standard API `0.0.2` is a packaging and correctness release.
 - Added conversion validation for supported currency codes, positive rates,
   and valid rate timestamps.
 - Made static demo assets work with the documented PHP development command.
+- Normalized negative zero in arithmetic results and rejected extra operands
+  for binary arithmetic operations.
 
 ### Explicitly alpha
 
