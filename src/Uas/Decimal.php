@@ -12,14 +12,15 @@ final class Decimal
     public static function normalize(string $value, int $scale = self::SCALE): string
     {
         $value = trim($value);
-        if (!preg_match('/^([+-]?)(\d+)(?:\.(\d+))?$/', $value, $m)) {
+        if (!preg_match('/^([+-]?)(?:(\d+)(?:\.(\d+))?|\.(\d+))$/', $value, $m)) {
             throw new InvalidArgumentException('amount must be a decimal string');
         }
-        $fraction = $m[3] ?? '';
+        $integerPart = $m[2] ?? '';
+        $fraction = ($m[3] ?? '') !== '' ? $m[3] : ($m[4] ?? '');
         if (strlen($fraction) > $scale) {
             throw new InvalidArgumentException("amount supports at most {$scale} fractional places");
         }
-        $integer = ltrim($m[2], '0') ?: '0';
+        $integer = ltrim($integerPart, '0') ?: '0';
         if (strlen($integer) > 20) {
             throw new InvalidArgumentException('amount exceeds DECIMAL(28,8) magnitude');
         }
