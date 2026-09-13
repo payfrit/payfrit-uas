@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>UAS API 0.0.1 Demo</title>
+  <title>UAS API 0.0.2 Demo</title>
   <style>
     :root { color-scheme: light; font: 16px system-ui, sans-serif; }
     body { max-width: 900px; margin: 40px auto; padding: 0 20px; color: #17202a; }
@@ -19,7 +19,7 @@
 </head>
 <body>
   <h1>Universal Amount Standard</h1>
-  <div class="muted">Standalone API demo · release 0.0.1</div>
+  <div class="muted">Standalone API demo · release 0.0.2</div>
 
   <section>
     <h2>Canonical digits</h2>
@@ -37,7 +37,7 @@
   <section>
     <h2>Explicit conversion</h2>
     <div class="row"><div><label for="convertAmount">Amount</label><input id="convertAmount" value="12.34"></div><div><label for="rate">Rate</label><input id="rate" value="0.92"></div><div><label for="source">From</label><select id="source"><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option><option>KWD</option></select></div><div><label for="target">To</label><select id="target"><option>EUR</option><option>USD</option><option>GBP</option><option>JPY</option><option>KWD</option></select></div><div><label for="convertOutput">Formatted result</label><input id="convertOutput" value="—" readonly></div><div><label for="convertCanonical">Canonical result</label><input id="convertCanonical" value="—" readonly></div><button onclick="convertAmount()">Convert</button></div>
-    <div id="convertResult" class="result">Rates are supplied explicitly in 0.0.1; the API does not claim they are live.</div>
+    <div id="convertResult" class="result">Rates are supplied explicitly in 0.0.2; the API does not claim they are live.</div>
   </section>
 
   <section>

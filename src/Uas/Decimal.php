@@ -20,6 +20,9 @@ final class Decimal
             throw new InvalidArgumentException("amount supports at most {$scale} fractional places");
         }
         $integer = ltrim($m[2], '0') ?: '0';
+        if (strlen($integer) > 20) {
+            throw new InvalidArgumentException('amount exceeds DECIMAL(28,8) magnitude');
+        }
         $fraction = str_pad($fraction, $scale, '0');
         $negative = $m[1] === '-' && ($integer !== '0' || trim($fraction, '0') !== '');
         return ($negative ? '-' : '') . $integer . '.' . $fraction;
@@ -47,7 +50,10 @@ final class Decimal
         $b = self::normalize($right, $scale);
         $negative = (($a[0] === '-') xor ($b[0] === '-'));
         $product = self::multiplyIntegers(str_replace(['-', '.'], '', $a), str_replace(['-', '.'], '', $b));
-        $product = strlen($product) > $scale ? substr($product, 0, -$scale) : str_pad($product, $scale + 1, '0', STR_PAD_LEFT);
+        [$product, $remainder] = self::divideIntegers($product, '1' . str_repeat('0', $scale));
+        if (self::compareIntegers(self::multiplyIntegers($remainder, '2'), '1' . str_repeat('0', $scale)) >= 0) {
+            $product = self::addIntegers($product, '1');
+        }
         return self::fromInteger($product, $negative ? '-' : '', $scale);
     }
 
@@ -55,7 +61,7 @@ final class Decimal
     {
         $a = self::normalize($left, $scale); $b = self::normalize($right, $scale);
         $bDigits = str_replace(['-', '.'], '', $b);
-        if ($bDigits === '0') throw new InvalidArgumentException('division by zero');
+        if (trim($bDigits, '0') === '') throw new InvalidArgumentException('division by zero');
         $negative = (($a[0] === '-') xor ($b[0] === '-'));
         [$quotient, $remainder] = self::divideIntegers(str_replace(['-', '.'], '', $a) . str_repeat('0', $scale), $bDigits);
         if (self::compareIntegers(self::multiplyIntegers($remainder, '2'), $bDigits) >= 0) {

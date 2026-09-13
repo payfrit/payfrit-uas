@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:uas:spec:0.0.1:universal-amount.schema.json",
+  "$id": "urn:uas:spec:0.0.2:universal-amount.schema.json",
   "title": "UniversalAmount",
   "description": "Exact UAS amount. Currency is supplied by surrounding context.",
   "type": "object",

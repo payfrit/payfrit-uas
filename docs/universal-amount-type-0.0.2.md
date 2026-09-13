@@ -1,4 +1,4 @@
-# UniversalAmount Data Type 0.0.1
+# UniversalAmount Data Type 0.0.2
 
 `UniversalAmount` is the foundational data type of the independent Universal
 Amount Standard API. It represents an exact value without assuming that USD or

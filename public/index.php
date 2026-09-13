@@ -17,7 +17,7 @@ $body = json_decode(file_get_contents('php://input'), true);
 $body = is_array($body) ? $body : [];
 
 try {
-    if ($method === 'GET' && $path === '/v1') $result=['ok'=>true,'api'=>'Universal Amount Standard API','version'=>'0.0.1','capabilities'=>['amounts','arithmetic','currencies','rate-explicit-conversion']];
+    if ($method === 'GET' && $path === '/v1') $result=['ok'=>true,'api'=>'Universal Amount Standard API','version'=>Api::VERSION,'capabilities'=>['amounts','arithmetic','currencies','rate-explicit-conversion']];
     elseif ($method === 'GET' && $path === '/v1/currencies') $result=['ok'=>true,'currencies'=>Api::currencies()];
     elseif ($method === 'POST' && $path === '/v1/amounts/normalize') $result=['ok'=>true,'data'=>Api::normalize($body)];
     elseif ($method === 'POST' && $path === '/v1/amounts/add') $result=['ok'=>true,'data'=>Api::arithmetic($body)];
