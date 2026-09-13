@@ -26,6 +26,8 @@ The machine-readable schema is available at
 
 - `amount` is required and is a decimal string, never a JSON number.
 - The value has exactly eight fractional digits after normalization.
+- Input helpers may accept shorthand forms such as `.1` and `-.5`; canonical
+  output always includes the leading zero (`0.10000000`, `-0.50000000`).
 - Leading zeroes are removed from the integer part, except for zero itself.
 - Positive signs are not emitted.
 - Negative zero is normalized to `0.00000000`.

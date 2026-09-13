@@ -10,6 +10,7 @@ $tests=[
     [Decimal::divide('1.00000000','3.00000000'),'0.33333333'],
     [Decimal::divide('-10.00000000','4.00000000'),'-2.50000000'],
     [Decimal::multiply('0.00000001','0.5'),'0.00000001'],
+    [Decimal::multiply('.1','.2'),'0.02000000'],
 ];
 foreach($tests as [$actual,$expected]) if($actual!==$expected) throw new RuntimeException("Expected $expected, got $actual");
 try { Decimal::normalize('123456789012345678901.00'); throw new RuntimeException('Magnitude limit was not enforced'); } catch (InvalidArgumentException) {}
